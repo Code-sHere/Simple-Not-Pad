@@ -9,24 +9,21 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-
-//middleware
-
-
+// middleware
 const methodOverride = require('method-override');
 app.use(methodOverride('_method'));
 
+// 🔥 COMMON FILES PATH (public/files)
+const FILES_DIR = path.join(__dirname, 'public', 'files');
 
-//home
+// home
 app.get('/', (req, res) => {
-    const filepath = path.join(__dirname, 'files');
-
-    fs.readdir(filepath, (err, files) => {
+    fs.readdir(FILES_DIR, (err, files) => {
         if (err) return console.log(err);
 
         if (req.query.file) {
             fs.readFile(
-                path.join(filepath, req.query.file),
+                path.join(FILES_DIR, req.query.file),
                 'utf-8',
                 (err, data) => {
                     if (err) return console.log(err);
@@ -44,53 +41,58 @@ app.get('/', (req, res) => {
                 tasks: files,
                 title: null,
                 descri: null,
-                mode:null
+                mode: null
             });
         }
     });
 });
 
+// create
 app.post('/create', (req, res) => {
-    fs.writeFile(path.join(__dirname, 'files', `${req.body.title}.txt`), req.body.descri, (err) => {
-        if (err) console.log(err);
-        else res.redirect('/');
-    })
-})
+    fs.writeFile(
+        path.join(FILES_DIR, `${req.body.title}.txt`),
+        req.body.descri,
+        (err) => {
+            if (err) console.log(err);
+            else res.redirect('/');
+        }
+    );
+});
 
+// update
 app.post('/update', (req, res) => {
-
     const { oldTitle, title, descri } = req.body;
 
-    const oldpath = path.join(__dirname, 'files', `${oldTitle}.txt`);
-    const newpath = path.join(__dirname, 'files', `${title}.txt`);
+    const oldPath = path.join(FILES_DIR, `${oldTitle}.txt`);
+    const newPath = path.join(FILES_DIR, `${title}.txt`);
 
     if (oldTitle === title) {
-        fs.writeFile(newpath, descri, 'utf-8', (err) => {
+        fs.writeFile(newPath, descri, 'utf-8', (err) => {
             if (err) console.log(err);
             else res.redirect('/');
         });
     } else {
-        fs.rename(oldpath, newpath, (err) => {
-            if (err) console.log(err);
+        fs.rename(oldPath, newPath, (err) => {
+            if (err) return console.log(err);
 
-            fs.writeFile(newpath, descri, 'utf-8', (err) => {
+            fs.writeFile(newPath, descri, 'utf-8', (err) => {
                 if (err) console.log(err);
                 else res.redirect('/');
-            })
-        })
+            });
+        });
     }
-})
+});
 
+// delete
+app.delete('/delete/:title', (req, res) => {
+    const filepath = path.join(FILES_DIR, req.params.title);
 
-app.delete('/delete/:title',(req,res)=>{
-    const filepath = path.join(__dirname, 'files', `${req.params.title}`);
+    fs.unlink(filepath, (err) => {
+        if (err) console.log(err);
+        res.redirect('/');
+    });
+});
 
-    fs.unlink(filepath,(err)=>{
-        if(err) console.log(err);
-        return res.redirect('/');
-    })
-     
-})
-
-
-app.listen(5420, () => console.log("🚀 Server chal raha hai on 5420"))
+app.listen(5420, () =>
+    console.log('🚀 Server chal raha hai on 5420')
+);
