@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasks</title>
+    <style>
+        /* Ultra-thin glass scrollbar */
+        .task-scroll::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .task-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .task-scroll::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg,
+                    rgba(99, 102, 241, 0.9),
+                    rgba(34, 211, 238, 0.9));
+            border-radius: 999px;
+            box-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
+        }
+
+        .task-scroll::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg,
+                    rgba(129, 140, 248, 1),
+                    rgba(56, 189, 248, 1));
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.9);
+        }
+
+        /* Firefox */
+        .task-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(66, 68, 207, 0.9) transparent;
+        }
+    </style>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+
+<body>
+
+    <div class="main w-full min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-black text-white p-4">
+
+        <!-- GRID WRAPPER -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+
+            <!-- CREATE TASK -->
+            <div class="backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-xl">
+                <h3 class="text-2xl font-bold mb-4">Create Tasks</h3>
+
+                <form action="<%= descri ? '/update' : '/create' %>" method="post" class="flex flex-col gap-5">
+
+                    <input type="text" name="title" placeholder="Title"
+                        class="p-3 rounded-2xl bg-black/30 border border-white/20  w-full">
+
+                    <textarea name="descri" placeholder="Write some descriptions"
+                        class="resize-none h-40 p-4 rounded-2xl bg-black/30 border border-white/20  w-full"></textarea>
+
+                    <button class="bg-blue-600 hover:bg-blue-500 duration-300 py-2 rounded-3xl font-semibold w-50 h-10">
+                        Create Task
+                    </button>
+                </form>
+            </div>
+
+            <!-- TASK LIST -->
+            <div class=" backdrop-blur-xl border border-white/20 rounded-3xl p-6
+         h-[386px] flex flex-col task-scroll">
+
+                <!-- Sticky Header -->
+                <h3 class="text-xl font-semibold mb-4 sticky top-0  backdrop-blur-xl z-10">
+                    Tasks List
+                </h3>
+
+                <!-- Scroll Area -->
+                <div class="overflow-y-auto pr-2 flex-1">
+
+                    <% tasks.forEach(task=> { %>
+                        <div class="flex justify-between items-center bg-black/30 p-3 rounded-xl mb-2">
+
+                            <a href="/?file=<%= task %>&mode=view" class="hover:underline truncate max-w-[60%]">
+                                <%= task %>
+                            </a>
+
+                            <div class="flex gap-3">
+                                <a href="/?file=<%= task %>&mode=edit" class="text-blue-400 hover:underline">
+                                    Edit
+                                </a>
+
+                                <form action="/delete/<%= task %>?_method=DELETE" method="post"
+                                    onsubmit="return confirm('Delete this task?')">
+
+                                    <button class="text-red-400 hover:text-red-300">
+                                        Delete
+                                    </button>
+
+                                </form>
+                            </div>
+                        </div>
+                        <% }) %>
+
+
+                </div>
+            </div>
+
+
+            <!-- VIEW MODE -->
+            <% if (mode==='view' && descri) { %>
+                <div
+                    class=" backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-xl col-span-1 md:col-span-2">
+                    <h3 class="text-2xl font-bold mb-3 border-b border-white/20 pb-3">
+                        <%= title %>
+                    </h3>
+
+                    <div class="text-zinc-200 whitespace-pre-line leading-relaxed font-mono text-lg">
+                        <%= descri %>
+                    </div>
+                </div>
+                <% } %>
+
+                    <!-- EDIT MODE -->
+                    <% if (mode==='edit' && descri) { %>
+                        <div
+                            class=" backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-xl col-span-1 md:col-span-2">
+                            <h3 class="text-2xl font-bold mb-4">Edit Task</h3>
+
+                            <form action="/update" method="post" class="flex flex-col gap-4">
+                                <input type="hidden" name="oldTitle" value="<%= title.replace('.txt','') %>">
+
+                                <input type="text" name="title" value="<%= title.replace('.txt','') %>"
+                                    class="p-3 rounded-2xl bg-black/30 border border-white/20 ">
+
+                                <textarea name="descri"
+                                    class="resize-none h-40 p-4 rounded-2xl bg-black/30 border border-white/20 "><%= descri %></textarea>
+
+                                <button
+                                    class="bg-green-600 hover:bg-green-500 w-50 h-10 duration-300 py-2 rounded-3xl font-semibold ">
+                                    Update Task
+                                </button>
+                            </form>
+                        </div>
+                        <% } %>
+
+        </div>
+    </div>
+
+</body>
+
+</html>
